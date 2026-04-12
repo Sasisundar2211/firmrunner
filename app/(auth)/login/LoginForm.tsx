@@ -10,18 +10,25 @@ export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setNeedsConfirmation(false)
     setLoading(true)
 
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError(error.message)
+      // Supabase returns this message when the user hasn't confirmed their email
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        setNeedsConfirmation(true)
+      } else {
+        setError(error.message)
+      }
       setLoading(false)
       return
     }
@@ -64,6 +71,21 @@ export default function LoginForm() {
 
       {error && (
         <p className="text-sm text-red-600">{error}</p>
+      )}
+
+      {needsConfirmation && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 space-y-2">
+          <p className="font-medium">Please confirm your email first.</p>
+          <p>
+            Check your inbox for the confirmation email we sent when you signed up.{' '}
+            <Link
+              href="/login?error_code=otp_expired"
+              className="underline hover:text-amber-900"
+            >
+              Resend confirmation email
+            </Link>
+          </p>
+        </div>
       )}
 
       <button

@@ -36,3 +36,9 @@ next-env.d.ts
 
 # sentry
 .sentryclirc
+
+# Claude Code internal config (agents, skills, session data)
+.claude/
+
+# Local task/planning files
+tasks/

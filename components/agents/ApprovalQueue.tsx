@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { AlertCircle } from 'lucide-react'
 import type { QueuedEmail } from '@/lib/supabase/types'
 
 const AGENT_LABEL: Record<string, string> = {
@@ -29,30 +29,20 @@ function timeAgo(iso: string): string {
 
 interface CardState {
   processing: boolean
-  rejecting: boolean      // rejection reason input is visible
+  rejecting: boolean
   rejectReason: string
 }
 
-export default function ApprovalQueue() {
+interface ApprovalQueueProps {
+  initialEmails: QueuedEmail[]
+  fetchError: string | null
+}
+
+export default function ApprovalQueue({ initialEmails, fetchError }: ApprovalQueueProps) {
   const router = useRouter()
-  const [emails, setEmails] = useState<QueuedEmail[]>([])
-  const [loading, setLoading] = useState(true)
+  const [emails, setEmails] = useState<QueuedEmail[]>(initialEmails)
   const [cardState, setCardState] = useState<Record<string, CardState>>({})
   const [expanded, setExpanded] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function fetchPending() {
-      const supabase = getSupabaseBrowserClient()
-      const { data } = await supabase
-        .from('queued_emails')
-        .select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false })
-      setEmails(data ?? [])
-      setLoading(false)
-    }
-    fetchPending()
-  }, [])
 
   function getCardState(id: string): CardState {
     return cardState[id] ?? { processing: false, rejecting: false, rejectReason: '' }
@@ -78,7 +68,6 @@ export default function ApprovalQueue() {
         const { error } = await res.json()
         throw new Error(error ?? 'Request failed')
       }
-      // Remove from list and refresh server components (updates sidebar badge)
       setEmails((prev) => prev.filter((e) => e.id !== email.id))
       router.refresh()
     } catch (err) {
@@ -87,18 +76,24 @@ export default function ApprovalQueue() {
     }
   }
 
-  if (loading) {
+  // Error state — table missing, RLS failure, etc.
+  if (fetchError) {
     return (
-      <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
-        <p className="text-sm text-gray-400">Loading approval queue…</p>
+      <div className="flex items-center gap-3 px-4 py-4 bg-red-50 border border-red-200 rounded-lg">
+        <AlertCircle size={16} className="text-red-400 shrink-0" />
+        <div>
+          <p className="text-sm font-medium text-red-700">Unable to load approval queue</p>
+          <p className="text-xs text-red-500 mt-0.5">{fetchError}</p>
+        </div>
       </div>
     )
   }
 
+  // Empty state
   if (emails.length === 0) {
     return (
-      <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
-        <p className="text-sm text-gray-400">No pending approvals.</p>
+      <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
+        <p className="text-sm text-gray-400">No pending emails to review</p>
       </div>
     )
   }
@@ -157,7 +152,7 @@ export default function ApprovalQueue() {
             {/* Preview pane */}
             {isExpanded && (
               <div className="px-4 pb-4 border-t border-gray-100 bg-gray-50">
-                <p className="text-xs text-gray-700 whitespace-pre-wrap mt-3 leading-relaxed font-sans">
+                <p className="text-xs text-gray-700 whitespace-pre-wrap mt-3 leading-relaxed">
                   {preview}{preview.length >= 200 ? '…' : ''}
                 </p>
               </div>

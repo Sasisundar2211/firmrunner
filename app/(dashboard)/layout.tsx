@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/dashboard/Sidebar'
+import TopBar from '@/components/dashboard/TopBar'
 
 export default async function DashboardLayout({
   children,
@@ -25,19 +26,26 @@ export default async function DashboardLayout({
   ])
 
   const firmUser = firmUserRes.data
+  const firmName = (firmUser?.firms as { name: string } | null)?.name ?? 'My Firm'
   const pendingCount = pendingRes.count ?? 0
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Left sidebar */}
       <Sidebar
-        firmName={(firmUser?.firms as { name: string } | null)?.name ?? 'My Firm'}
+        firmName={firmName}
         userEmail={user.email ?? ''}
         userRole={firmUser?.role ?? 'staff'}
         pendingCount={pendingCount}
       />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6">{children}</div>
-      </main>
+
+      {/* Right column: top bar + scrollable content */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <TopBar firmName={firmName} />
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

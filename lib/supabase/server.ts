@@ -6,13 +6,35 @@ import type { Database } from './types'
 /**
  * Server-side Supabase client that reads/writes the auth cookie.
  * Use in Server Components, Route Handlers, and Server Actions.
+ *
+ * IMPORTANT: cookies() is called first, before the env-var guard.
+ * During `next build`'s static pre-render phase, cookies() throws
+ * a DynamicServerError that Next.js catches to mark the route as
+ * dynamic — aborting the pre-render before the env-var check runs.
+ * At real request time, both proceed normally.
  */
 export function createClient() {
+  // Call cookies() first — registers the dynamic dependency so Next.js
+  // aborts static pre-render before reaching the env-var check below.
   const cookieStore = cookies()
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL — add it to .env.local or Vercel project settings.'
+    )
+  }
+  if (!supabaseAnonKey) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_ANON_KEY — add it to .env.local or Vercel project settings.'
+    )
+  }
+
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -35,11 +57,26 @@ export function createClient() {
 /**
  * Service-role admin client — bypasses RLS.
  * Only use in trusted server contexts (webhooks, cron jobs, migrations).
+ * API routes are never statically pre-rendered, so no cookies() guard needed.
  */
 export function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL — add it to .env.local or Vercel project settings.'
+    )
+  }
+  if (!serviceRoleKey) {
+    throw new Error(
+      'Missing SUPABASE_SERVICE_ROLE_KEY — add it to .env.local or Vercel project settings.'
+    )
+  }
+
   return createSupabaseClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseUrl,
+    serviceRoleKey,
     {
       auth: {
         autoRefreshToken: false,
