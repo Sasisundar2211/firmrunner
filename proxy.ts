@@ -58,6 +58,7 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute =
     isAuthRoute ||
     pathname.startsWith('/auth/callback') ||
+    pathname.startsWith('/auth/reset-password') ||
     pathname.startsWith('/api/webhooks') ||
     pathname.startsWith('/api/agents') ||
     pathname.startsWith('/api/client-response')
