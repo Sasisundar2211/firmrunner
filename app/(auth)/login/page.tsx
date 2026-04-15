@@ -19,11 +19,12 @@ const ERROR_MESSAGES: Record<string, string> = {
 const NEEDS_RESEND = new Set(['otp_expired', 'access_denied'])
 
 interface Props {
-  searchParams: { error?: string; error_code?: string }
+  searchParams: Promise<{ error?: string; error_code?: string }>
 }
 
-export default function LoginPage({ searchParams }: Props) {
-  const errorKey = searchParams.error_code ?? searchParams.error
+export default async function LoginPage({ searchParams }: Props) {
+  const { error, error_code } = await searchParams
+  const errorKey = error_code ?? error
   const errorMessage = errorKey ? (ERROR_MESSAGES[errorKey] ?? `Sign-in error: ${errorKey}`) : null
   const showResend = errorKey ? NEEDS_RESEND.has(errorKey) : false
 

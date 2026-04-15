@@ -5,7 +5,7 @@ import { formatCurrency, formatDate, daysBetween } from '@/lib/utils'
 export const metadata: Metadata = { title: 'Billing — FirmRunner' }
 
 export default async function BillingPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
   const today = new Date().toISOString().split('T')[0]
 

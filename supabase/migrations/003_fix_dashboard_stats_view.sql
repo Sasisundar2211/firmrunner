@@ -13,7 +13,10 @@
 -- Run in Supabase SQL Editor (Dashboard → SQL Editor → paste + run).
 -- =============================================================================
 
-CREATE OR REPLACE VIEW public.dashboard_stats
+-- DROP required because CREATE OR REPLACE cannot change column types
+DROP VIEW IF EXISTS public.dashboard_stats;
+
+CREATE VIEW public.dashboard_stats
 WITH (security_invoker = true)
 AS
 SELECT
@@ -44,7 +47,7 @@ SELECT
     )                                                                             AS unpaid_invoices,
 
     -- Agent logs (kept for historical sent count; pending_agent_approvals now from queued_emails in app)
-    0                                                                             AS pending_agent_approvals,
+    0::bigint                                                                     AS pending_agent_approvals,
     COUNT(DISTINCT al.id) FILTER (
         WHERE al.status = 'sent'
           AND al.sent_at >= NOW() - INTERVAL '30 days'

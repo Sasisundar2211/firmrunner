@@ -6,7 +6,7 @@ import EngagementLetterEditor from './EngagementLetterEditor'
 export const metadata: Metadata = { title: 'Settings — FirmRunner' }
 
 export default async function SettingsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
 
   const { data: firm } = await supabase

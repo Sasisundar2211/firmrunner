@@ -13,10 +13,9 @@ import type { Database } from './types'
  * dynamic — aborting the pre-render before the env-var check runs.
  * At real request time, both proceed normally.
  */
-export function createClient() {
-  // Call cookies() first — registers the dynamic dependency so Next.js
-  // aborts static pre-render before reaching the env-var check below.
-  const cookieStore = cookies()
+export async function createClient() {
+  // In Next.js 15+, cookies() is async — must be awaited.
+  const cookieStore = await cookies()
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -91,7 +90,7 @@ export function createAdminClient() {
  * Throws if the user is not authenticated or has no firm association.
  */
 export async function getSessionFirmId(): Promise<string> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) throw new Error('Unauthenticated')
 

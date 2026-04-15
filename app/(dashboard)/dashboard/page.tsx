@@ -6,7 +6,7 @@ import ApprovalQueue from '@/components/agents/ApprovalQueue'
 export const metadata: Metadata = { title: 'Dashboard — FirmRunner' }
 
 export default async function DashboardPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
 
   console.log('[dashboard] firmId:', firmId)

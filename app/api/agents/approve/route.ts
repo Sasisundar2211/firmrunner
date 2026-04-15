@@ -12,7 +12,7 @@ import { sendEmail } from '@/lib/resend'
  * to the requesting user's firm — no explicit firm_id check needed.
  */
 export async function POST(request: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Auth
   const { data: { user } } = await supabase.auth.getUser()

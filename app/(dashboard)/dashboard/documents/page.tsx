@@ -4,7 +4,7 @@ import { createClient, getSessionFirmId } from '@/lib/supabase/server'
 export const metadata: Metadata = { title: 'Documents — FirmRunner' }
 
 export default async function DocumentsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
 
   const { data: documents } = await supabase

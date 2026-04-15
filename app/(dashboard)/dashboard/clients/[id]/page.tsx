@@ -7,7 +7,7 @@ import { FILING_TYPE_LABELS } from '@/lib/ai/prompts'
 import type { FilingType } from '@/lib/supabase/types'
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -24,13 +24,14 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 }
 
 export default async function ClientDetailPage({ params }: Props) {
-  const supabase = createClient()
+  const { id } = await params
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
 
   const { data: client } = await supabase
     .from('clients')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('firm_id', firmId)   // scoped to this firm — prevents cross-tenant access
     .single()
 

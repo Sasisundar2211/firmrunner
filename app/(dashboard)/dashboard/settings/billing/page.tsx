@@ -47,7 +47,7 @@ const PLANS: {
 ]
 
 export default async function PlanBillingPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
 
   const { data: firm } = await supabase

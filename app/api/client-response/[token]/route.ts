@@ -50,7 +50,7 @@ function decodeToken(raw: string): TokenPayload | null {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   const { searchParams } = new URL(request.url)
   const action = searchParams.get('action')
@@ -59,8 +59,10 @@ export async function GET(
     return htmlPage('Invalid Link', 'Invalid Link', 'This link is not valid.', true)
   }
 
+  const { token } = await params
+
   // Decode and validate token
-  const payload = decodeToken(params.token)
+  const payload = decodeToken(token)
   if (!payload) {
     return htmlPage('Invalid Link', 'Invalid Link', 'This link could not be decoded. Please contact your accountant.', true)
   }

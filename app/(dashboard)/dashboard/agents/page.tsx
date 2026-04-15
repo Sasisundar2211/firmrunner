@@ -6,7 +6,7 @@ import AgentLog from '@/components/agents/AgentLog'
 export const metadata: Metadata = { title: 'Agents — FirmRunner' }
 
 export default async function AgentsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
 
   const { data: recentLogs } = await supabase

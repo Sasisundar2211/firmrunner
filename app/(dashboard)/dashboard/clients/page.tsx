@@ -5,7 +5,7 @@ import ClientList from '@/components/dashboard/ClientList'
 export const metadata: Metadata = { title: 'Clients — FirmRunner' }
 
 export default async function ClientsPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
 
   const { data: clients } = await supabase

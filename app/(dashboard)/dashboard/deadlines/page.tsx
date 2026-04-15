@@ -5,7 +5,7 @@ import DeadlineTable from '@/components/dashboard/DeadlineTable'
 export const metadata: Metadata = { title: 'Deadlines — FirmRunner' }
 
 export default async function DeadlinesPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const firmId = await getSessionFirmId()
 
   const { data: deadlines } = await supabase
