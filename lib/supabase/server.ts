@@ -98,8 +98,43 @@ export async function getSessionFirmId(): Promise<string> {
     .from('firm_users')
     .select('firm_id')
     .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (firmUser?.firm_id) return firmUser.firm_id
+
+  // Fallback: If DB trigger hasn't created the firm/firm_user row yet,
+  // create it using admin client so login/signup never breaks for the user.
+  const adminSupabase = createAdminClient()
+  const firmName =
+    (user.user_metadata?.firm_name as string | undefined)?.trim() ||
+    `${user.email?.split('@')[0] || 'My'}'s Firm`
+
+  const { data: newFirm, error: firmErr } = await adminSupabase
+    .from('firms')
+    .insert({
+      name: firmName,
+      owner_email: user.email || '',
+    })
+    .select('id')
     .single()
 
-  if (!firmUser) throw new Error('No firm association found')
-  return firmUser.firm_id
+  if (firmErr || !newFirm) {
+    throw new Error(`Failed to initialize firm: ${firmErr?.message || 'Unknown error'}`)
+  }
+
+  const { error: userErr } = await adminSupabase
+    .from('firm_users')
+    .insert({
+      firm_id: newFirm.id,
+      user_id: user.id,
+      role: 'owner',
+      email: user.email || '',
+      full_name: (user.user_metadata?.full_name as string | undefined) || null,
+    })
+
+  if (userErr) {
+    throw new Error(`Failed to associate user with firm: ${userErr.message}`)
+  }
+
+  return newFirm.id
 }

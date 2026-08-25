@@ -41,8 +41,7 @@ export default function SignupForm() {
         return
       }
 
-      router.refresh()
-      router.push('/dashboard')
+      window.location.href = '/dashboard'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
     } finally {

@@ -188,13 +188,15 @@ export type Database = {
     Tables: {
       firms: {
         Row: Firm
-        Insert: Omit<Firm, 'id' | 'created_at' | 'updated_at'>
+        Insert: Required<Pick<Firm, 'name' | 'owner_email'>> &
+          Partial<Pick<Firm, 'subscription_plan' | 'subscription_status' | 'stripe_customer_id' | 'stripe_subscription_id' | 'n8n_webhook_url' | 'engagement_letter_template' | 'engagement_letter_required' | 'settings'>>
         Update: Partial<Omit<Firm, 'id'>>
         Relationships: []
       }
       firm_users: {
         Row: FirmUser
-        Insert: Omit<FirmUser, 'id' | 'created_at'>
+        Insert: Required<Pick<FirmUser, 'firm_id' | 'user_id' | 'email'>> &
+          Partial<Pick<FirmUser, 'role' | 'full_name'>>
         Update: Partial<Omit<FirmUser, 'id'>>
         Relationships: [
           { foreignKeyName: 'firm_users_firm_id_fkey'; columns: ['firm_id']; isOneToOne: false; referencedRelation: 'firms'; referencedColumns: ['id'] }
