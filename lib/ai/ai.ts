@@ -84,7 +84,7 @@ async function callProvider(
       const Anthropic = (await import('@anthropic-ai/sdk')).default
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
       const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: maxTokens,
         messages: [{ role: 'user', content: prompt }],
       })
